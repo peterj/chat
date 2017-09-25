@@ -93,9 +93,5 @@ var typeTypes = []string{
 }
 
 func Event(evt, typ int, ipAddress string, format string, a ...interface{}) {
-	log.Printf("***> EVENT : IP [ %s ] : EVT[%s] TYP[%s]: %s", ipAddress, eevtTypes[evt], typeTypes[typ], fmt.Sprintf(format, a...))
-}
-
-// dep init
-// dep ensure
-// dep prune
+	log.Printf("***> EVENT : IP [ %s ] : EVT[%s] TYP[%s]: %s", ipAddress, evtTypes[evt], typeTypes[typ], fmt.Sprintf(format, a...))
+}s
