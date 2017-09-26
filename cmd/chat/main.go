@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bufio"
+	"fmt"
 	"log"
 	"net"
+	"os"
 
 	"github.com/peterj/chat/internal/msg"
 )
@@ -15,22 +18,50 @@ func main() {
 		log.Println("dial", err)
 	}
 
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Print("\nName:> ")
+	name, _ := reader.ReadString('\n')
+	name = name[:len(name)-1]
+
+	// Show online
 	m := msg.MSG{
-		Sender:    "Bill",
-		Recipient: "Cory",
-		Data:      "Hello There",
+		Sender:    name,
+		Recipient: "",
+		Data:      fmt.Sprintf("%s is online", name),
 	}
-
 	data := msg.Encode(m)
-
 	if _, err := conn.Write(data); err != nil {
 		log.Println("write", err)
 	}
 
-	if data, _, err = msg.Read(conn); err != nil {
-		log.Println("read", err)
-	}
+	// Receiving goroutine.
+	go func() {
+		data, _, err := msg.Read(conn)
+		if err != nil {
+			log.Println("read", err)
+			return
+		}
 
-	mRecv := msg.Decode(data)
-	log.Println(mRecv)
+		mRecv := msg.Decode(data)
+		log.Println(mRecv)
+		fmt.Printf("\n%s#> ", name)
+	}()
+
+	for {
+		fmt.Printf("\n%s#> ", name)
+		message, _ := reader.ReadString('\n')
+
+		m := msg.MSG{
+			Sender:    name,
+			Recipient: "",
+			Data:      message,
+		}
+
+		data := msg.Encode(m)
+
+		if _, err := conn.Write(data); err != nil {
+			log.Println("write", err)
+		}
+	}
 }
