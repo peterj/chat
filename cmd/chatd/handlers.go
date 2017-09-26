@@ -45,10 +45,12 @@ func (reqHandler) Process(r *tcp.Request) {
 
 	log.Printf("read : IP[ %s ] : %v\n", r.TCPAddr.IP.String(), m)
 
+	d := msg.Encode(m)
+
 	resp := tcp.Response{
 		TCPAddr: r.TCPAddr,
-		Data:    []byte("GOT IT\n"),
-		Length:  7,
+		Data:    d,
+		Length:  len(d),
 	}
 
 	r.TCP.Send(context.TODO(), &resp)

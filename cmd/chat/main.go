@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"log"
 	"net"
 
@@ -27,7 +26,10 @@ func main() {
 		log.Println("write", err)
 	}
 
-	bufReader := bufio.NewReader(conn)
-	response, err := bufReader.ReadString('\n')
-	log.Println(response)
+	if data, _, err = msg.Read(conn); err != nil {
+		log.Println("read", err)
+	}
+
+	mRecv := msg.Decode(data)
+	log.Println(mRecv)
 }
