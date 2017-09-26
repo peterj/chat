@@ -55,17 +55,28 @@ func Read(r io.Reader) ([]byte, int, error) {
 
 // Decode will take the bytes and create a MSG value.
 func Decode(data []byte) MSG {
+	var name string
+	if n := bytes.IndexByte(data[:10], 0); n != -1 {
+		name = string(data[:n])
+	} else {
+		name = string(data[:10])
+	}
 	return MSG{
-		Name: string(data[:10]),
+		Name: name,
 		Data: string(data[12:]),
 	}
 }
 
 // Encode will take a message and produce byte slice.
 func Encode(msg MSG) []byte {
+	// we can't have more than the first 10 bytes.
+	n := len(msg.Name)
+	if n > 10 {
+		n = 10
+	}
 	data := make([]byte, hdrLength+len(msg.Data))
 
-	copy(data, msg.Name[:len(msg.Name)])
+	copy(data, msg.Name[:n])
 	binary.BigEndian.PutUint16(data[10:12], uint16(len(msg.Data)))
 	copy(data[12:], msg.Data)
 
