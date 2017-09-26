@@ -9,20 +9,22 @@ import (
 	"github.com/pkg/errors"
 )
 
-const hdrLength = 12
+const hdrLength = 22
 
 // MSG defines the message protocol data.
 type MSG struct {
-	Name string
-	Data string
+	Sender    string
+	Recipient string
+	Data      string
 }
 
 // String implements the fmt Stringer interface.
 func (m MSG) String() string {
 	var b bytes.Buffer
 
-	b.WriteString(fmt.Sprintf("\nName: %s\n", m.Name))
-	b.WriteString(fmt.Sprintf("Data: %s\n", m.Data))
+	b.WriteString(fmt.Sprintf("\n{\n\tSender: %s\n", m.Sender))
+	b.WriteString(fmt.Sprintf("\tRecipient: %s\n", m.Recipient))
+	b.WriteString(fmt.Sprintf("\tData: %s\n}\n", m.Data))
 
 	return b.String()
 }
@@ -38,7 +40,7 @@ func Read(r io.Reader) ([]byte, int, error) {
 	}
 
 	// Get the length for the remaining bytes.
-	length := int(binary.BigEndian.Uint16(buf[10:12])) + hdrLength
+	length := int(binary.BigEndian.Uint16(buf[20:22])) + hdrLength
 
 	// Copy the header bytes into the final slice.
 	data := make([]byte, length)
@@ -55,30 +57,47 @@ func Read(r io.Reader) ([]byte, int, error) {
 
 // Decode will take the bytes and create a MSG value.
 func Decode(data []byte) MSG {
-	var name string
+	var sender string
 	if n := bytes.IndexByte(data[:10], 0); n != -1 {
-		name = string(data[:n])
+		sender = string(data[:n])
 	} else {
-		name = string(data[:10])
+		sender = string(data[:10])
 	}
+
+	var recipient string
+	if n := bytes.IndexByte(data[10:20], 0); n != -1 {
+		recipient = string(data[10 : 10+n])
+	} else {
+		recipient = string(data[10:20])
+	}
+
 	return MSG{
-		Name: name,
-		Data: string(data[12:]),
+		Sender:    sender,
+		Recipient: recipient,
+		Data:      string(data[22:]),
 	}
 }
 
 // Encode will take a message and produce byte slice.
 func Encode(msg MSG) []byte {
 	// we can't have more than the first 10 bytes.
-	n := len(msg.Name)
-	if n > 10 {
-		n = 10
+	ns := len(msg.Sender)
+	if ns > 10 {
+		ns = 10
 	}
+
+	nr := len(msg.Recipient)
+	if nr > 10 {
+		nr = 10
+	}
+
 	data := make([]byte, hdrLength+len(msg.Data))
 
-	copy(data, msg.Name[:n])
-	binary.BigEndian.PutUint16(data[10:12], uint16(len(msg.Data)))
-	copy(data[12:], msg.Data)
+	copy(data, msg.Sender[:ns])
+	copy(data[10:], msg.Recipient[:nr])
+
+	binary.BigEndian.PutUint16(data[20:22], uint16(len(msg.Data)))
+	copy(data[22:], msg.Data)
 
 	return data
 }

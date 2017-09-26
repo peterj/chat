@@ -16,8 +16,9 @@ func main() {
 	}
 
 	m := msg.MSG{
-		Name: "0123456789",
-		Data: "Hello There",
+		Sender:    "Bill",
+		Recipient: "Cory",
+		Data:      "Hello There",
 	}
 
 	data := msg.Encode(m)

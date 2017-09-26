@@ -19,18 +19,20 @@ func TestEncode(t *testing.T) {
 		{
 			name: "length",
 			msg: msg.MSG{
-				Name: "1234567890",
-				Data: "hello",
+				Sender:    "BillKenned",
+				Recipient: "JillKenned",
+				Data:      "hello",
 			},
-			length: 17,
+			length: 27,
 		},
 		{
 			name: "shortname",
 			msg: msg.MSG{
-				Name: "012345",
-				Data: "helloworld",
+				Sender:    "Bill",
+				Recipient: "Cory",
+				Data:      "helloworld",
 			},
-			length: 22,
+			length: 32,
 		},
 	}
 
@@ -46,10 +48,15 @@ func TestEncode(t *testing.T) {
 				t.Logf("\t%s\tShould have the correct number of bytes\n", succeeded)
 
 				msg := msg.Decode(data)
-				if msg.Name != tst.msg.Name {
-					t.Fatalf("\t%s\tShould have the correct name : exp[%v] got[%v]\n", failed, []byte(tst.msg.Name), []byte(msg.Name))
+				if msg.Sender != tst.msg.Sender {
+					t.Fatalf("\t%s\tShould have the correct sender : exp[%v] got[%v]\n", failed, tst.msg.Sender, msg.Sender)
 				}
-				t.Logf("\t%s\tShould have the correct name\n", succeeded)
+				t.Logf("\t%s\tShould have the correct sender\n", succeeded)
+
+				if msg.Recipient != tst.msg.Recipient {
+					t.Fatalf("\t%s\tShould have the correct recipient : exp[%v] got[%v]\n", failed, tst.msg.Recipient, msg.Recipient)
+				}
+				t.Logf("\t%s\tShould have the correct recipient\n", succeeded)
 
 				if msg.Data != tst.msg.Data {
 					t.Fatalf("\t%s\tShould have the correct data : exp[%s] got[%s]\n", failed, tst.msg.Data, msg.Data)
